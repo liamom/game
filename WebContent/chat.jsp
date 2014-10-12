@@ -19,6 +19,7 @@
 	<input type="text" id="input" />
 	<input type="button" id="submit" onclick="sendText(input.value)" value="submit" />
 	<input type="button" id="connect" onclick="connect()" value="connect" />
+	<input type="checkbox" id="useGroovy" value="useGroovyWebsocket" />
 </div>
 
 <!-- Javascript -->
@@ -28,10 +29,15 @@
 	var ws;
 	
 	function connect(){
-		ws = new WebSocket('ws://' + window.location.host + '/game/chatRoom'); 
+		var roomString = useGroovy.checked ? '/game/chatRoomGroovy' : '/game/chatRoom';
+		
+		ws = new WebSocket('ws://' + window.location.host + roomString); 
+		
 		ws.onopen = function(msg) {
 		   console.log('Connection successfully opened');
+		   writeToScreen('Connection successfully opened');
 		};
+		
 		ws.onmessage = function(msg) {
 		        // what do you want
 		        console.log(msg.data);

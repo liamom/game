@@ -1,46 +1,54 @@
 package chatroom;
 
 import java.io.IOException;
+import java.util.*;
 
-import javax.websocket.OnClose;
-import javax.websocket.OnError;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
 import javax.websocket.Session;
-import javax.websocket.server.ServerEndpoint;
 
-@ServerEndpoint("/chatRoom")
-public class chatroom {
+public class ChatRoom {
+	private final int chatRoomSize = 4;
+	private List<chatPerson> players;
+	private UUID roomId;
 	
-	@OnOpen
-	public void start(Session session){
-		message(session,"hello");
+	ChatRoom(){
+		players = new ArrayList<chatPerson>(chatRoomSize);
+		setRoomId(UUID.randomUUID());
 	}
 	
-
-    @OnClose
-    public void end() {
-        //message("bye");
-    }
-    
-    @OnError
-    public void onError(Throwable t) throws Throwable {
-        //log.error("Chat Error: " + t.toString(), t);
-    }
-	
-	@OnMessage
-	public void message(Session session, String msg){
-		for (Session sess : session.getOpenSessions()) {
-	      try {
-             if (sess.isOpen())
-                sess.getBasicRemote().sendText(msg);
-	       } catch (IOException e) { 
-	    	   try {
-	    		   sess.close();
-				} catch (IOException e1) {
-					System.err.println("OMG ERROR");
-				}
-	       }
+	public boolean addSession(chatPerson session){
+		if(players.size() < chatRoomSize){
+			players.add(session);
+			session.name = "Guest " + players.indexOf(session) + " : ";
+			return true;
+		}else{
+			return false;
 		}
 	}
+	
+	public void sendToRoom(String msg){
+		for(chatPerson person : players){
+			Session sess = person.session;
+			 try {
+	             if (sess.isOpen())
+	                sess.getBasicRemote().sendText(msg);
+		       } catch (IOException e) { 
+		    	   try {
+		    		   sess.close();
+					} catch (IOException e1) {
+						System.err.println("OMG ERROR");
+					}
+		       }
+		}
+	}
+
+	public UUID getRoomId() {
+		return roomId;
+	}
+
+	public void setRoomId(UUID roomId) {
+		this.roomId = roomId;
+	}
+	
+	
+	
 }
